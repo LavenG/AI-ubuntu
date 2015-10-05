@@ -1,0 +1,2 @@
+# AI-ubuntu
+AI assignments
