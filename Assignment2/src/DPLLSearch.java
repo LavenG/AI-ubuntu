@@ -1,11 +1,12 @@
-import java.util.ArrayList;
+import java.lang.reflect.Array;
+import java.util.*;
 import java.io.*;
 
 /**
  * Created by min on 10/5/15.
  */
 public class DPLLSearch {
-    public static  ArrayList<ArrayList<String>> clauseSet = new ArrayList<>();
+    public static  ArrayList<List<String>> clauseSet = new ArrayList<>();
 
     public static void readClauseSet (String inputFile) {
        try {
@@ -13,9 +14,11 @@ public class DPLLSearch {
            String line = null;
            while((line = bufferedReader.readLine()) != null) {
                if (line.compareTo("0") != 0) {
-                   System.out.println(line);
+                   List<String> tempSplit = Arrays.asList(line.split("\\s+"));
+                   clauseSet.add(tempSplit);
+                   System.out.println("clauseSet " + clauseSet);
                } else {
-                   System.out.println("irrelate " + line);
+                   break;
                }
            }
            bufferedReader.close();
