@@ -65,7 +65,7 @@ public class DPLLSearch {
         ArrayList<ArrayList<String>> copyclauseSet = new ArrayList<>();
         if (atom.atomValue.equals("true")) {
             for (int i = 0; i < newClauseSet.size(); i++) {
-                ArrayList<String> temp = newClauseSet.get(i);
+                ArrayList<String> temp = new ArrayList<String>(newClauseSet.get(i));
                 if(temp.contains(String.valueOf(atom.atomIndex))) {
                     temp.clear();
                 }
@@ -100,7 +100,6 @@ public class DPLLSearch {
                 }
             }
         }
-        System.out.println("clauseSet" + " " + clauseSet);
     return copyclauseSet;
     }
 
@@ -141,7 +140,7 @@ public class DPLLSearch {
     }
 
     public static boolean chooseAtom (ArrayList<ArrayList<String>> newClauseSet) {
-        if (!atoms.isEmpty()) {
+        /*if (!atoms.isEmpty()) {
             Collections.sort(atoms);
             pickAtom.atomIndex = atoms.get(0);
             pickAtom.atomValue = "true";
@@ -149,13 +148,27 @@ public class DPLLSearch {
             return true;
         } else {
             return false;
+        }*/
+        int tempMin = Math.abs(Integer.parseInt(newClauseSet.get(0).get(0)));
+        for (int i = 0; i < newClauseSet.size(); i++) {
+            for (int j = 0; j < newClauseSet.get(i).size(); j++) {
+                if (tempMin > Math.abs(Integer.parseInt(newClauseSet.get(i).get(j)))) {
+                    tempMin = Math.abs(Integer.parseInt(newClauseSet.get(i).get(j)));
+                }
+            }
         }
+        pickAtom.atomIndex = tempMin;
+        pickAtom.atomValue = "true";
+        return true;
+
+
+
     }
 
     public static ArrayList<ArrayList<String>> falseUpdateClause (ArrayList<ArrayList<String>> newClauseSet) {
-        ArrayList<ArrayList<String>> temp = new ArrayList<>();
+        ArrayList<ArrayList<String>> temp = new ArrayList<>(newClauseSet);
         for (int i = 0; i < exploredAtom.size(); i++) {
-           temp = updateClauseSet(exploredAtom.get(i), newClauseSet);
+           temp = updateClauseSet(exploredAtom.get(i), temp);
         }
         return temp;
     }
@@ -173,8 +186,8 @@ public class DPLLSearch {
                 tempAtom = exploredAtom.pop();
             }
             tempAtom.atomValue = "false";
+            System.out.println("pick: " + tempAtom.atomIndex + " " + tempAtom.atomValue);
             exploredAtom.push(tempAtom);
-            System.out.println(clauseSet);
             tempClause = falseUpdateClause(clauseSet);
             System.out.println(tempClause);
             dpll(tempClause);
