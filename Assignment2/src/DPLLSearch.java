@@ -178,6 +178,10 @@ public class DPLLSearch {
         ArrayList<ArrayList<String>> tempClause = new ArrayList<>();
         Atom tempPick = dp.new Atom();
         if (newClauseSet.isEmpty()) {
+            System.out.println("Solution is");
+            for (int i = 0; i < exploredAtom.size(); i++) {
+                System.out.println(exploredAtom.get(i).atomIndex + exploredAtom.get(i).atomValue);
+            }
             return true;
         } else if (unsatisfiedSet(newClauseSet))  {
             Atom tempAtom = dp.new Atom();
