@@ -194,7 +194,9 @@ public class DPLLSearch {
             exploredAtom.push(tempAtom);
             tempClause = falseUpdateClause(clauseSet);
             System.out.println(tempClause);
-            dpll(tempClause);
+            if  (dpll(tempClause)) {
+                return true;
+            }
         } else {
             if (singleton(newClauseSet)) {
                 System.out.println("pick: " + pickAtom.atomIndex + " "+ pickAtom.atomValue);
@@ -203,7 +205,9 @@ public class DPLLSearch {
                 exploredAtom.add(tempPick);
                 tempClause = updateClauseSet(pickAtom, newClauseSet);
                 System.out.println(tempClause);
-                dpll(tempClause);
+                if (dpll(tempClause)) {
+                    return true;
+                }
             } else if (pureLiteral(newClauseSet)) {
                 tempPick.atomValue = pickAtom.atomValue;
                 tempPick.atomIndex = pickAtom.atomIndex;
@@ -214,7 +218,9 @@ public class DPLLSearch {
                 }*/
                 tempClause = updateClauseSet(pickAtom, newClauseSet);
                 System.out.println(tempClause);
-                dpll(tempClause);
+                if (dpll(tempClause)) {
+                    return true;
+                }
             } else if (chooseAtom(newClauseSet)){
                 System.out.println("pick: " + pickAtom.atomIndex + " "+ pickAtom.atomValue);
                 tempPick.atomValue = pickAtom.atomValue;
@@ -225,7 +231,9 @@ public class DPLLSearch {
                 }*/
                 tempClause = updateClauseSet(pickAtom, newClauseSet);
                 System.out.println(tempClause);
-                dpll(tempClause);
+                if (dpll(tempClause)) {
+                    return true;
+                }
             }
 
         }
