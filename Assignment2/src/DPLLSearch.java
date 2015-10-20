@@ -1,8 +1,5 @@
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
-import org.omg.CORBA.ARG_IN;
-import sun.org.mozilla.javascript.ast.WhileLoop;
 
-import java.lang.reflect.Array;
+import javax.swing.plaf.synth.SynthEditorPaneUI;
 import java.util.*;
 import java.io.*;
 
@@ -20,16 +17,15 @@ public class DPLLSearch {
     public static DPLLSearch dp = new DPLLSearch();
     public static Atom pickAtom = dp.new Atom();
     public static Stack<Atom> exploredAtom = new Stack<>();
-    public static ArrayList<Atom> allAtoms = new ArrayList<>();
+    public static ArrayList<Integer> allAtoms = new ArrayList<>();
     public static boolean restInfo = false;
     public static ArrayList<String> restInformation = new ArrayList<>();
+    public static ArrayList<Integer> exploredIndex = new ArrayList<>();
 
     public static void addAtoms (ArrayList<String> arrayList) {
         for (String temp:arrayList) {
             if (!allAtoms.contains(Math.abs(Integer.parseInt(temp)))) {
-                Atom tempAtom = dp.new Atom();
-                tempAtom.atomIndex = Math.abs(Integer.parseInt(temp));
-                allAtoms.add(tempAtom);
+                allAtoms.add(Math.abs(Integer.parseInt(temp)));
             }
         }
     }
@@ -54,7 +50,6 @@ public class DPLLSearch {
             }
 
             bufferedReader.close();
-            System.out.println(restInformation);
         }
         catch(FileNotFoundException ex) {
             System.out.println(
@@ -70,7 +65,7 @@ public class DPLLSearch {
 
     public static boolean unsatisfiedSet(ArrayList<ArrayList<String>> newClauseSet) {
         for (int i = 0; i < newClauseSet.size(); i++) {
-            if ((newClauseSet.get(i).size() == 1) && (newClauseSet.get(i).get(0).equals("false"))) {
+            if ((newClauseSet.get(i).size() == 1) && (newClauseSet.get(i).get(0).equals("F"))) {
                 return true;
             }
         }
@@ -79,7 +74,7 @@ public class DPLLSearch {
 
     public static ArrayList<ArrayList<String>> updateClauseSet (Atom atom, ArrayList<ArrayList<String>> newClauseSet){
         ArrayList<ArrayList<String>> copyclauseSet = new ArrayList<>();
-        if (atom.atomValue.equals("true")) {
+        if (atom.atomValue.equals("T")) {
             for (int i = 0; i < newClauseSet.size(); i++) {
                 ArrayList<String> temp = new ArrayList<String>(newClauseSet.get(i));
                 if(temp.contains(String.valueOf(atom.atomIndex))) {
@@ -87,7 +82,7 @@ public class DPLLSearch {
                 }
                 if((temp.contains(String.valueOf(-(atom.atomIndex)))) && (temp.size() == 1)) {
                     temp.clear();
-                    temp.add("false");
+                    temp.add("F");
                 }
                 if((temp.contains(String.valueOf(-(atom.atomIndex)))) && (temp.size() > 1)) {
                     temp.remove(String.valueOf(-(atom.atomIndex)));
@@ -98,7 +93,7 @@ public class DPLLSearch {
             }
         }
 
-        if (atom.atomValue.equals("false")) {
+        if (atom.atomValue.equals("F")) {
             for (int i = 0; i < newClauseSet.size(); i++) {
                 ArrayList<String> temp = newClauseSet.get(i);
                 if(temp.contains(String.valueOf(-(atom.atomIndex)))) {
@@ -109,7 +104,7 @@ public class DPLLSearch {
                 }
                 if((temp.contains(String.valueOf(atom.atomIndex))) && (temp.size() == 1)) {
                     temp.clear();
-                    temp.add("false");
+                    temp.add("F");
                 }
                 if (!temp.isEmpty()) {
                     copyclauseSet.add(temp);
@@ -123,7 +118,7 @@ public class DPLLSearch {
         for (ArrayList<String> temp : newClauseSet) {
             if (temp.size() == 1) {
                 pickAtom.atomIndex = Integer.parseInt(temp.get(0));
-                pickAtom.atomValue = "true";
+                pickAtom.atomValue = "T";
                 return true;
             }
         }
@@ -147,7 +142,7 @@ public class DPLLSearch {
         Collections.sort(pureLiteral);
         if (!pureLiteral.isEmpty()) {
             pickAtom.atomIndex = pureLiteral.get(0);
-            pickAtom.atomValue = "true";
+            pickAtom.atomValue = "T";
             pureLiteral.remove(0);
             return true;
         } else {
@@ -165,7 +160,7 @@ public class DPLLSearch {
             }
         }
         pickAtom.atomIndex = tempMin;
-        pickAtom.atomValue = "true";
+        pickAtom.atomValue = "T";
         return true;
 
 
@@ -189,10 +184,10 @@ public class DPLLSearch {
         } else if (unsatisfiedSet(newClauseSet))  {
             Atom tempAtom = dp.new Atom();
             tempAtom = exploredAtom.pop();
-            while (tempAtom.atomValue.equals("false")) {
+            while (tempAtom.atomValue.equals("F")) {
                 tempAtom = exploredAtom.pop();
             }
-            tempAtom.atomValue = "false";
+            tempAtom.atomValue = "F";
             exploredAtom.push(tempAtom);
             tempClause = falseUpdateClause(clauseSet);
             if  (dpll(tempClause)) {
@@ -230,32 +225,37 @@ public class DPLLSearch {
         return false;
     }
 
-    /*public static void printOutput () {
+    public static void printOutput() {
+        boolean exploreState = false;
         Collections.sort(allAtoms);
         for (Integer temp:allAtoms) {
-            for (Atom tempExplore:exploredAtom) {
+            for (Atom tempExplore: exploredAtom) {
                 if (temp == tempExplore.atomIndex) {
                     System.out.println(tempExplore.atomIndex + " " + tempExplore.atomValue);
-                    /*allAtoms.remove(temp);*/
-                /*}
+                    exploreState = true;
+                }
                 if (temp == (-tempExplore.atomIndex)) {
-                    if (tempExplore.atomValue.equals("true")) {
-                        System.out.println(temp + " false");
+                    if (tempExplore.atomValue.equals("T")) {
+                        System.out.println(temp + " F");
+                        exploreState = true;
                     }
-                    if (tempExplore.atomValue.equals("false")) {
-                        System.out.println(temp + " true");
+                    if (tempExplore.atomValue.equals("F")) {
+                        System.out.println(temp + " T");
+                        exploreState = true;
                     }
-                    /*allAtoms.remove(temp);*/
-                /*}
+                }
+            }
+            if (!exploreState) {
+                System.out.println(temp + " T");
+            } else {
+                exploreState = false;
             }
         }
 
-        /*if (!allAtoms.isEmpty()) {
-            for (Integer temp:allAtoms) {
-                System.out.println(temp + " true");
-            }
-        }*/
-
+        for (String temp:restInformation){
+            System.out.println(temp);
+        }
+    }
 
     public  static  void main (String[] args) {
         String inputFile = null;
@@ -264,6 +264,6 @@ public class DPLLSearch {
         }
         readClauseSet(inputFile);
         dpll(clauseSet);
-        /*printOutput();*/
+        printOutput();
     }
 }
