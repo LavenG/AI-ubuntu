@@ -28,10 +28,11 @@
       <file leaf-file-name="DPLLSearch.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/DPLLSearch.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-3.2672706">
-              <caret line="30" column="5" selection-start-line="30" selection-start-column="5" selection-end-line="30" selection-end-column="5" />
+            <state vertical-scroll-proportion="0.64665914">
+              <caret line="177" column="70" selection-start-line="177" selection-start-column="70" selection-end-line="177" selection-end-column="70" />
               <folding>
                 <element signature="imports" expanded="true" />
+                <element signature="e#3207#3215#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -362,6 +363,7 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#3207#3215#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -388,6 +390,7 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#3207#3215#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -406,6 +409,7 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#3207#3215#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -424,6 +428,7 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#3207#3215#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -461,10 +466,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/DPLLSearch.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-3.2672706">
-          <caret line="30" column="5" selection-start-line="30" selection-start-column="5" selection-end-line="30" selection-end-column="5" />
+        <state vertical-scroll-proportion="0.64665914">
+          <caret line="177" column="70" selection-start-line="177" selection-start-column="70" selection-end-line="177" selection-end-column="70" />
           <folding>
             <element signature="imports" expanded="true" />
+            <element signature="e#3207#3215#0" expanded="true" />
           </folding>
         </state>
       </provider>

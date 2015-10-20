@@ -22,6 +22,7 @@ public class DPLLSearch {
     public static ArrayList<String> restInformation = new ArrayList<>();
     public static ArrayList<Integer> exploredIndex = new ArrayList<>();
 
+    /* collect all the atoms */
     public static void addAtoms (ArrayList<String> arrayList) {
         for (String temp:arrayList) {
             if (!allAtoms.contains(Math.abs(Integer.parseInt(temp)))) {
@@ -30,6 +31,8 @@ public class DPLLSearch {
         }
     }
 
+
+    /* read clauseSet from input file and store the rest information */
     public static void readClauseSet (String inputFile) {
         try {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile));
@@ -63,6 +66,7 @@ public class DPLLSearch {
         }
     }
 
+    /* check the clauseSet is unsatisfied or not */
     public static boolean unsatisfiedSet(ArrayList<ArrayList<String>> newClauseSet) {
         for (int i = 0; i < newClauseSet.size(); i++) {
             if ((newClauseSet.get(i).size() == 1) && (newClauseSet.get(i).get(0).equals("F"))) {
@@ -72,6 +76,7 @@ public class DPLLSearch {
         return false;
     }
 
+    /* update the clauseSet after assigning value to an atom */
     public static ArrayList<ArrayList<String>> updateClauseSet (Atom atom, ArrayList<ArrayList<String>> newClauseSet){
         ArrayList<ArrayList<String>> copyclauseSet = new ArrayList<>();
         if (atom.atomValue.equals("T")) {
@@ -114,6 +119,7 @@ public class DPLLSearch {
         return copyclauseSet;
     }
 
+    /* check the atom is singleton or not */
     public static boolean singleton (ArrayList<ArrayList<String>> newClauseSet) {
         for (ArrayList<String> temp : newClauseSet) {
             if (temp.size() == 1) {
@@ -125,6 +131,7 @@ public class DPLLSearch {
         return false;
     }
 
+    /* check the atom is pureLiteral or not */
     public static boolean pureLiteral (ArrayList<ArrayList<String>> newClauseSet) {
         for (int i = 0; i < newClauseSet.size(); i++) {
             for (int j = 0; j < newClauseSet.get(i).size(); j++) {
@@ -150,6 +157,7 @@ public class DPLLSearch {
         }
     }
 
+    /*If atom is neither singleton nor pureLiteral, choose an atom in numerical order */
     public static boolean chooseAtom (ArrayList<ArrayList<String>> newClauseSet) {
         int tempMin = Math.abs(Integer.parseInt(newClauseSet.get(0).get(0)));
         for (int i = 0; i < newClauseSet.size(); i++) {
@@ -167,6 +175,7 @@ public class DPLLSearch {
 
     }
 
+    /*update the clauseSet when the value of atom is changed to false */
     public static ArrayList<ArrayList<String>> falseUpdateClause (ArrayList<ArrayList<String>> newClauseSet) {
         ArrayList<ArrayList<String>> temp = new ArrayList<>(newClauseSet);
         for (int i = 0; i < exploredAtom.size(); i++) {
