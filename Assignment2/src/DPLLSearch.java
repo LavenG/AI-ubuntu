@@ -20,12 +20,16 @@ public class DPLLSearch {
     public static DPLLSearch dp = new DPLLSearch();
     public static Atom pickAtom = dp.new Atom();
     public static Stack<Atom> exploredAtom = new Stack<>();
-    public static ArrayList<Integer> allAtoms = new ArrayList<>();
+    public static ArrayList<Atom> allAtoms = new ArrayList<>();
+    public static boolean restInfo = false;
+    public static ArrayList<String> restInformation = new ArrayList<>();
 
     public static void addAtoms (ArrayList<String> arrayList) {
         for (String temp:arrayList) {
             if (!allAtoms.contains(Math.abs(Integer.parseInt(temp)))) {
-                allAtoms.add(Math.abs(Integer.parseInt(temp)));
+                Atom tempAtom = dp.new Atom();
+                tempAtom.atomIndex = Math.abs(Integer.parseInt(temp));
+                allAtoms.add(tempAtom);
             }
         }
     }
@@ -35,16 +39,22 @@ public class DPLLSearch {
             BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFile));
             String line = null;
             while((line = bufferedReader.readLine()) != null) {
-                if (line.compareTo("0") != 0) {
-                    ArrayList<String> tempSplit = new ArrayList<>(Arrays.asList(line.split("\\s+")));
-                    clauseSet.add(tempSplit);
-                    addAtoms(tempSplit);
+                if (!restInfo) {
+                    if (line.compareTo("0") != 0) {
+                        ArrayList<String> tempSplit = new ArrayList<>(Arrays.asList(line.split("\\s+")));
+                        clauseSet.add(tempSplit);
+                        addAtoms(tempSplit);
+                    } else {
+                        restInfo = true;
+                        restInformation.add(line);
+                    }
                 } else {
-                    break;
+                    restInformation.add(line);
                 }
             }
 
             bufferedReader.close();
+            System.out.println(restInformation);
         }
         catch(FileNotFoundException ex) {
             System.out.println(
@@ -220,14 +230,14 @@ public class DPLLSearch {
         return false;
     }
 
-    public static void printOutput () {
+    /*public static void printOutput () {
         Collections.sort(allAtoms);
         for (Integer temp:allAtoms) {
             for (Atom tempExplore:exploredAtom) {
                 if (temp == tempExplore.atomIndex) {
                     System.out.println(tempExplore.atomIndex + " " + tempExplore.atomValue);
                     /*allAtoms.remove(temp);*/
-                }
+                /*}
                 if (temp == (-tempExplore.atomIndex)) {
                     if (tempExplore.atomValue.equals("true")) {
                         System.out.println(temp + " false");
@@ -236,7 +246,7 @@ public class DPLLSearch {
                         System.out.println(temp + " true");
                     }
                     /*allAtoms.remove(temp);*/
-                }
+                /*}
             }
         }
 
@@ -246,7 +256,6 @@ public class DPLLSearch {
             }
         }*/
 
-    }
 
     public  static  void main (String[] args) {
         String inputFile = null;
@@ -255,6 +264,6 @@ public class DPLLSearch {
         }
         readClauseSet(inputFile);
         dpll(clauseSet);
-        printOutput();
+        /*printOutput();*/
     }
 }
