@@ -18,10 +18,12 @@ public class DecisionTree {
     public static int utility_S;
     public static int utility_F;
     public static double originalPro_S;
-    public static ArrayList<Integer> remainReviewer_original;
-    public static ArrayList<Integer> remainReviewer_cp;
+    public static ArrayList<Integer> remainReviewer_original = new ArrayList<>();
+    public static ArrayList<Integer> remainReviewer_cp = new ArrayList<>();
     public static DecisionTree dt = new DecisionTree();
+
     public static ArrayList<Reviewer> reviewersList = new ArrayList<>();
+    public static ArrayList<Reviewer> consultReviewer = new ArrayList<>();
 
 
     public static void publisherInfo (ArrayList<String> info) {
@@ -38,8 +40,8 @@ public class DecisionTree {
         tempReviewer.probability_S = Double.parseDouble(info.get(1));
         tempReviewer.probability_F = Double.parseDouble(info.get(2));
         reviewersList.add(tempReviewer);
-        remainReviewer_original.add(tempReviewer.reviewerID);
-        remainReviewer_cp.add(tempReviewer.reviewerID);
+        remainReviewer_original.add(i);
+        remainReviewer_cp.add(i);
     }
 
     public static void parser (String inputFile) {
@@ -82,7 +84,9 @@ public class DecisionTree {
     }
 
     public static int publishValue (double prev_S, ArrayList<Reviewer> consultReviewer) {
-        double temp = (utility_S + consultPayment(consultReviewer)) * prev_S + (consultPayment(consultReviewer) + utility_F) * (1 - prev_S);
+        System.out.println(consultPayment(consultReviewer));
+        double temp = (utility_S - consultPayment(consultReviewer)) * prev_S - (consultPayment(consultReviewer) - utility_F) * (1 - prev_S);
+        System.out.println((int)Math.round(temp));
         return (int)Math.round(temp);
 
     }
@@ -92,62 +96,73 @@ public class DecisionTree {
     }
 
     public static double reviewerYes (double prev_S, Reviewer currentReviewer) {
+        System.out.println(prev_S * currentReviewer.probability_S + (1 - prev_S) * currentReviewer.probability_F);
         return prev_S * currentReviewer.probability_S + (1 - prev_S) * currentReviewer.probability_F;
     }
 
     public static double updatePrevYes_S (double prev_S, Reviewer currentReviewer) {
+        System.out.println(prev_S * currentReviewer.probability_S / reviewerYes(prev_S, currentReviewer));
         return prev_S * currentReviewer.probability_S / reviewerYes(prev_S, currentReviewer);
     }
 
     public static double updatePrevNo_S (double prev_S, Reviewer currentReviewer) {
+        System.out.println(currentReviewer.probability_F * currentReviewer.probability_S / (1 - reviewerYes(prev_S, currentReviewer)));
         return currentReviewer.probability_F * currentReviewer.probability_S / (1 - reviewerYes(prev_S, currentReviewer));
     }
 
-    public static int reviewYes_Value (double prev_S, ArrayList<Integer> remainReviewer, Reviewer currentReviewer) {
+    public static int reviewYes_Value (double prev_S, ArrayList<Reviewer> remainReviewer, Reviewer currentReviewer) {
         double temp;
         if (remainReviewer.isEmpty()) {
-            temp = reviewerYes(prev_S, currentReviewer) * publishValue(updatePrevYes_S(prev_S, currentReviewer), consultReviewer(currentReviewer));
+            temp = reviewerYes(prev_S, currentReviewer) * publishValue(updatePrevYes_S(prev_S, currentReviewer), consultReviewer);
+            System.out.println(reviewerYes(prev_S, currentReviewer) + " " + updatePrevYes_S(prev_S, currentReviewer) + " " + publishValue(updatePrevYes_S(prev_S, currentReviewer), consultReviewer) );
         } else {
-            temp = reviewerYes(prev_S, currentReviewer) * expectedValue(updatePrevYes_S(prev_S, currentReviewer), remainReviewer, publishValue(prev_S, consultReviewer(currentReviewer)));
+            temp = reviewerYes(prev_S, currentReviewer) * expectedValue(updatePrevYes_S(prev_S, currentReviewer), remainReviewer, publishValue(updatePrevYes_S(prev_S, currentReviewer), consultReviewer));
         }
+        System.out.println((int)Math.round(temp));
         return (int)Math.round(temp);
     }
 
-    public static int reviewNo_Value (double prev_S, ArrayList<Integer> remainReviewer, Reviewer currentReviewer) {
+    public static int reviewNo_Value (double prev_S, ArrayList<Reviewer> remainReviewer, Reviewer currentReviewer) {
         double temp;
         if (remainReviewer.isEmpty()) {
-            temp = rejValue(consultReviewer(currentReviewer));
+            temp = (1 - reviewerYes(prev_S, currentReviewer)) * rejValue(consultReviewer);
         } else {
-            temp = (1 - reviewerYes(prev_S, currentReviewer)) * expectedValue(updatePrevNo_S(prev_S, currentReviewer), remainReviewer, rejValue(consultReviewer(currentReviewer)));
+            temp = (1 - reviewerYes(prev_S, currentReviewer)) * expectedValue(updatePrevNo_S(prev_S, currentReviewer), remainReviewer, rejValue(consultReviewer));
         }
+        System.out.println((int)Math.round(temp));
         return (int)Math.round(temp);
     }
 
-    public static int review_Value (double prev_S, ArrayList<Integer> remainReviewer, Reviewer currentReviewer) {
-        return reviewYes_Value(prev_S, remainReviewer, currentReviewer) + reviewNo_Value(prev_S, remainReviewer, currentReviewer);
+    public static int review_Value (double prev_S, ArrayList<Reviewer> remainReviewer, Reviewer currentReviewer) {
+        System.out.println(reviewYes_Value(prev_S, remainReviewer, currentReviewer) - reviewNo_Value(prev_S, remainReviewer, currentReviewer));
+        return reviewYes_Value(prev_S, remainReviewer, currentReviewer) - reviewNo_Value(prev_S, remainReviewer, currentReviewer);
     }
 
-    public static ArrayList<Reviewer> consultReviewer (Reviewer currentReviewer) {
-        ArrayList<Reviewer> temp = new ArrayList<>();
-        temp.add(currentReviewer);
-        return temp;
+    public static void consultReviewerFun (Reviewer currentReviewer) {
+        consultReviewer.add(currentReviewer);
     }
 
-    public static ArrayList<Integer> upDateRemainReviewer (int currentReviewer) {
-        remainReviewer_cp.remove(currentReviewer);
-        return remainReviewer_cp;
+    public static ArrayList<Reviewer> upDateRemainReviewer (int currentReviewer, ArrayList<Reviewer> prev_remain) {
+        int temp = 0;
+        for (int i = 0; i < prev_remain.size(); i++) {
+            if (prev_remain.get(i).reviewerID == currentReviewer) {
+                temp = i;
+            }
+        }
+        prev_remain.remove(temp);
+        return prev_remain;
     }
 
 
-    public static Reviewer currentReviewer (ArrayList<Reviewer> reviewersList, int i) {
-        Reviewer currentReviewer = dt.new Reviewer();
+    /*public static Reviewer currentReviewerFun (ArrayList<Reviewer> reviewersList, int i) {
+        Reviewer currentReviewer = dt. new Reviewer();
         currentReviewer.reviewerID = reviewersList.get(i).reviewerID;
         currentReviewer.cost = reviewersList.get(i).cost;
         currentReviewer.probability_S = reviewersList.get(i).probability_S;
         currentReviewer.probability_F = reviewersList.get(i).probability_F;
-        consultReviewer(currentReviewer);
-        return  currentReviewer;
-    }
+        consultReviewer.add(currentReviewer);
+        return currentReviewer;
+    }*/
 
     public static ArrayList<Reviewer> remainReviewerList (ArrayList<Integer> remainReviewer) {
         ArrayList<Reviewer> tempList = new ArrayList<>();
@@ -161,13 +176,17 @@ public class DecisionTree {
         return tempList;
     }
 
-    public static int expectedValue(double prev_S, ArrayList<Integer> remainReviewer, int pub_rejValue) {
-            maxValue = pub_rejValue;
-            for (int i = 0; i < remainReviewer.size(); i++) {
-                currentReviewer(remainReviewerList(remainReviewer), i);
-                int tempID = currentReviewer(remainReviewerList(remainReviewer), i).reviewerID;
-                maxValue = Math.max(maxValue, review_Value(prev_S, upDateRemainReviewer(tempID), currentReviewer(remainReviewerList(remainReviewer), i)));
-            }
+    public static int expectedValue(double prev_S, ArrayList<Reviewer> remainReviewer, int pub_rejValue) {
+        maxValue = pub_rejValue;
+        for (int i = 0; i < remainReviewer.size(); i++) {
+            Reviewer currentReviewer = dt. new Reviewer();
+            currentReviewer.reviewerID = remainReviewer.get(i).reviewerID;
+            currentReviewer.cost = remainReviewer.get(i).cost;
+            currentReviewer.probability_S = remainReviewer.get(i).probability_S;
+            currentReviewer.probability_F = remainReviewer.get(i).probability_F;
+            consultReviewer.add(currentReviewer);
+            maxValue = Math.max(maxValue, review_Value(prev_S, upDateRemainReviewer(currentReviewer.reviewerID, remainReviewer), currentReviewer));
+        }
         return maxValue;
     }
 
@@ -175,5 +194,8 @@ public class DecisionTree {
         String inputFile;
         inputFile = args[0];
         parser(inputFile);
+        double temp = utility_S * originalPro_S + utility_F * (1 - originalPro_S);
+        int startPubValue = (int)Math.round(temp);
+        expectedValue(originalPro_S, reviewersList, startPubValue);
     }
 }
