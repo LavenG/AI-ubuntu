@@ -18,13 +18,11 @@ public class DecisionTree {
     public static int utility_S;
     public static int utility_F;
     public static double originalPro_S;
-    public static ArrayList<Integer> remainReviewer_original = new ArrayList<>();
+    public static String firstStep;
     public static ArrayList<Integer> remainReviewer_cp = new ArrayList<>();
     public static DecisionTree dt = new DecisionTree();
     public static ArrayList<Integer> reviewerIDList = new ArrayList<>();
     public static ArrayList<Reviewer> reviewersList = new ArrayList<>();
-    public static ArrayList<Reviewer> consultReviewer = new ArrayList<>();
-
 
     public static void publisherInfo (ArrayList<String> info) {
         reviewerNumber = Integer.valueOf(info.get(0));
@@ -40,7 +38,6 @@ public class DecisionTree {
         tempReviewer.probability_S = Double.parseDouble(info.get(1));
         tempReviewer.probability_F = Double.parseDouble(info.get(2));
         reviewersList.add(tempReviewer);
-        remainReviewer_original.add(i);
         remainReviewer_cp.add(i);
         reviewerIDList.add(i);
     }
@@ -86,7 +83,6 @@ public class DecisionTree {
 
     public static int publishValue (double prev_S, ArrayList<Reviewer> consultReviewer) {
         double temp = (utility_S + consultPayment(consultReviewer)) * prev_S + (consultPayment(consultReviewer) + utility_F) * (1 - prev_S);
-        System.out.println((int)Math.round(temp));
         return (int)Math.round(temp);
 
     }
@@ -96,17 +92,14 @@ public class DecisionTree {
     }
 
     public static double reviewerYes (double prev_S, Reviewer currentReviewer) {
-        System.out.println(prev_S * currentReviewer.probability_S + (1 - prev_S) * currentReviewer.probability_F);
         return prev_S * currentReviewer.probability_S + (1 - prev_S) * currentReviewer.probability_F;
     }
 
     public static double updatePrevYes_S (double prev_S, Reviewer currentReviewer) {
-        System.out.println(prev_S * currentReviewer.probability_S / reviewerYes(prev_S, currentReviewer));
         return prev_S * currentReviewer.probability_S / reviewerYes(prev_S, currentReviewer);
     }
 
     public static double updatePrevNo_S (double prev_S, Reviewer currentReviewer) {
-        System.out.println(prev_S * (1 - currentReviewer.probability_S) / (1 - reviewerYes(prev_S, currentReviewer)));
         return prev_S * (1 - currentReviewer.probability_S) / (1 - reviewerYes(prev_S, currentReviewer));
     }
 
@@ -117,7 +110,6 @@ public class DecisionTree {
         } else {
             temp = reviewerYes(prev_S, currentReviewer) * expectedValue(updatePrevYes_S(prev_S, currentReviewer), remainReviewer, publishValue(updatePrevYes_S(prev_S, currentReviewer), consultReviewers(remainReviewer)));
         }
-        System.out.println((int)Math.round(temp));
         return (int)Math.round(temp);
     }
 
@@ -128,12 +120,10 @@ public class DecisionTree {
         } else {
             temp = (1 - reviewerYes(prev_S, currentReviewer)) * expectedValue(updatePrevNo_S(prev_S, currentReviewer), remainReviewer, rejValue(consultReviewers(remainReviewer)));
         }
-        System.out.println((int)Math.round(temp));
         return (int)Math.round(temp);
     }
 
     public static int review_Value (double prev_S, ArrayList<Reviewer> remainReviewer, Reviewer currentReviewer) {
-        /*System.out.println(reviewYes_Value(prev_S, remainReviewer, currentReviewer) - reviewNo_Value(prev_S, remainReviewer, currentReviewer));*/
         ArrayList<Reviewer> remainReviewerYes_cp = new ArrayList<>(remainReviewer);
         ArrayList<Reviewer> remainReviewerNo_cp = new ArrayList<>(remainReviewer);
         int tempYes = reviewYes_Value(prev_S, remainReviewerYes_cp, currentReviewer);
@@ -141,9 +131,6 @@ public class DecisionTree {
         return tempYes + tempNo;
     }
 
-    public static void consultReviewerFun (Reviewer currentReviewer) {
-        consultReviewer.add(currentReviewer);
-    }
 
     public static ArrayList<Reviewer> upDateRemainReviewer (int currentReviewer, ArrayList<Reviewer> prev_remain) {
         int temp = 0;
@@ -193,11 +180,16 @@ public class DecisionTree {
             currentReviewer.cost = remainReviewer.get(i).cost;
             currentReviewer.probability_S = remainReviewer.get(i).probability_S;
             currentReviewer.probability_F = remainReviewer.get(i).probability_F;
-            /*consultReviewer.add(currentReviewer);*/
             ArrayList<Reviewer> remainReviewer_cp = new ArrayList<>(remainReviewer);
             ArrayList<Reviewer> newRemain = new ArrayList<>(upDateRemainReviewer(currentReviewer.reviewerID, remainReviewer_cp));
             maxValue = Math.max(maxValue, review_Value(prev_S, newRemain, currentReviewer));
+            if (maxValue == pub_rejValue) {
+                firstStep = "Publish";
+            } else {
+                firstStep = "Consult reviewer " + String.valueOf(currentReviewer.reviewerID);
+            }
         }
+
         return maxValue;
     }
 
@@ -207,6 +199,7 @@ public class DecisionTree {
         parser(inputFile);
         double temp = utility_S * originalPro_S + utility_F * (1 - originalPro_S);
         int startPubValue = (int)Math.round(temp);
-        expectedValue(originalPro_S, reviewersList, startPubValue);
+        System.out.println("Expected value:" + " " + expectedValue(originalPro_S, reviewersList, startPubValue));
+        System.out.println(firstStep);
     }
 }
