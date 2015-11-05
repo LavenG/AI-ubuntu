@@ -18,8 +18,8 @@ public class DecisionTree {
         Node yesPath;
         Node noPath;
         Node choiceNode;
-        String publish;
-        String reject;
+        String publish = "Null";
+        String reject = "Null";
         int value;
         String ID;
     }
@@ -252,11 +252,11 @@ public class DecisionTree {
                 choice.ID = "Reviewer " + " " + String.valueOf(currentReviewer.reviewerID);
                 tempNode = choice;
             }
-                /*if (maxValue == pub_rejValue) {
-                    firstStep = "Publish";
-                } else {
-                    firstStep = "Consult reviewer " + String.valueOf(currentReviewer.reviewerID + ": ");
-                }*/
+            if (maxValue == pub_rejValue) {
+                firstStep = "Publish";
+            } else {
+                firstStep = "Consult reviewer " + String.valueOf(currentReviewer.reviewerID + ": ");
+            }
 
         }
 
@@ -278,11 +278,11 @@ public class DecisionTree {
         while (!output.equals("Publish") && !output.equals("Reject")) {
             if (input.equals("yes")) {
                 currentNode = currentNode.yesPath;
-                if (currentNode.publish != null) {
-                    output = currentNode.publish;
+                if (currentNode.choiceNode.publish.equals("Publish")) {
+                    output = "Publish";
                     System.out.println(output);
-                } else if (currentNode.reject != null) {
-                    output = currentNode.reject;
+                } else if (currentNode.choiceNode.reject.equals("Reject")) {
+                    output = "Reject";
                     System.out.println(output);
                 } else {
                     input = scan.next();
@@ -290,11 +290,11 @@ public class DecisionTree {
             }
             if (input.equals("no")) {
                 currentNode = currentNode.noPath;
-                if (currentNode.publish != null) {
-                    output = currentNode.publish;
+                if (currentNode.choiceNode.publish.equals("Publish")) {
+                    output = "Publish";
                     System.out.println(output);
-                } else if (currentNode.reject != null) {
-                    output = currentNode.reject;
+                } else if (currentNode.choiceNode.reject.equals("Reject")) {
+                    output = "Reject";
                     System.out.println(output);
                 } else {
                     currentNode = currentNode.choiceNode;
