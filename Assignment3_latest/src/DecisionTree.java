@@ -1,6 +1,7 @@
 /**
  * Created by min on 11/1/15.
  */
+import javax.swing.text.AsyncBoxView;
 import java.util.*;
 import java.io.*;
 import java.lang.*;
@@ -13,6 +14,18 @@ public class DecisionTree {
         double probability_S;
         double probability_F;
     }
+    public class Node {
+        Node yesPath;
+        Node noPath;
+        Node choiceNode;
+        String publish;
+        String reject;
+        int value;
+        String ID;
+    }
+
+
+
     public static int reviewerNumber;
     public static int maxValue;
     public static int utility_S;
@@ -103,32 +116,61 @@ public class DecisionTree {
         return prev_S * (1 - currentReviewer.probability_S) / (1 - reviewerYes(prev_S, currentReviewer));
     }
 
-    public static int reviewYes_Value (double prev_S, ArrayList<Reviewer> remainReviewer, Reviewer currentReviewer) {
+    public static Node reviewYes_Value (double prev_S, ArrayList<Reviewer> remainReviewer, Reviewer currentReviewer) {
         double temp;
+        Node tempNode = dt. new Node();
         if (remainReviewer.isEmpty()) {
             temp = reviewerYes(prev_S, currentReviewer) * publishValue(updatePrevYes_S(prev_S, currentReviewer), reviewersList);
+            tempNode.value = (int)Math.round(temp);
+            tempNode.publish = "Publish";
         } else {
-            temp = reviewerYes(prev_S, currentReviewer) * expectedValue(updatePrevYes_S(prev_S, currentReviewer), remainReviewer, publishValue(updatePrevYes_S(prev_S, currentReviewer), consultReviewers(remainReviewer)));
+            int tempPub = publishValue(updatePrevYes_S(prev_S, currentReviewer), consultReviewers(remainReviewer));
+            int tempEp = expectedValue(updatePrevYes_S(prev_S, currentReviewer), remainReviewer, tempPub).value;
+            temp = reviewerYes(prev_S, currentReviewer) * tempEp;
+            if (tempPub == tempEp) {
+                tempNode.publish = "Publish";
+            } else {
+                tempNode.ID = "Reviewer " + " " + String.valueOf(currentReviewer.reviewerID);
+            }
+            tempNode.value = (int)Math.round(temp);
         }
-        return (int)Math.round(temp);
+        return tempNode;
     }
 
-    public static int reviewNo_Value (double prev_S, ArrayList<Reviewer> remainReviewer, Reviewer currentReviewer) {
+    public static Node reviewNo_Value (double prev_S, ArrayList<Reviewer> remainReviewer, Reviewer currentReviewer) {
         double temp;
+        Node tempNode = dt. new Node();
         if (remainReviewer.isEmpty()) {
             temp = (1 - reviewerYes(prev_S, currentReviewer)) * rejValue(reviewersList);
+            tempNode.value = (int)Math.round(temp);
+            tempNode.reject = "Reject";
         } else {
-            temp = (1 - reviewerYes(prev_S, currentReviewer)) * expectedValue(updatePrevNo_S(prev_S, currentReviewer), remainReviewer, rejValue(consultReviewers(remainReviewer)));
+            int tempRej = rejValue(consultReviewers(remainReviewer));
+            int tempEp = expectedValue(updatePrevNo_S(prev_S, currentReviewer), remainReviewer, tempRej).value;
+            temp = (1 - reviewerYes(prev_S, currentReviewer)) * tempEp;
+            if (tempRej == tempEp) {
+                tempNode.publish = "Reject";
+            } else {
+                tempNode.ID = "Reviewer " + " " + String.valueOf(currentReviewer.reviewerID);
+            }
+            tempNode.value = (int)Math.round(temp);
+
         }
-        return (int)Math.round(temp);
+        return tempNode;
     }
 
-    public static int review_Value (double prev_S, ArrayList<Reviewer> remainReviewer, Reviewer currentReviewer) {
+    public static Node review_Value (double prev_S, ArrayList<Reviewer> remainReviewer, Reviewer currentReviewer) {
+        Node tempYesNode;
+        Node tempNoNode;
+        Node tempNode = dt. new Node();
         ArrayList<Reviewer> remainReviewerYes_cp = new ArrayList<>(remainReviewer);
         ArrayList<Reviewer> remainReviewerNo_cp = new ArrayList<>(remainReviewer);
-        int tempYes = reviewYes_Value(prev_S, remainReviewerYes_cp, currentReviewer);
-        int tempNo = reviewNo_Value(prev_S, remainReviewerNo_cp, currentReviewer);
-        return tempYes + tempNo;
+        tempYesNode = reviewYes_Value(prev_S, remainReviewerYes_cp, currentReviewer);
+        tempNoNode = reviewNo_Value(prev_S, remainReviewerNo_cp, currentReviewer);
+        tempNode.value = tempNoNode.value + tempYesNode.value;
+        tempNode.yesPath = tempYesNode;
+        tempNode.noPath = tempNoNode;
+        return tempNode;
     }
 
 
@@ -172,8 +214,10 @@ public class DecisionTree {
         return tempConsultList;
     }
 
-    public static int expectedValue(double prev_S, ArrayList<Reviewer> remainReviewer, int pub_rejValue) {
+    public static Node expectedValue(double prev_S, ArrayList<Reviewer> remainReviewer, int pub_rejValue) {
         maxValue = pub_rejValue;
+        Node tempNode = dt.new Node();
+        Node tempChoice;
         for (int i = 0; i < remainReviewer.size(); i++) {
             Reviewer currentReviewer = dt. new Reviewer();
             currentReviewer.reviewerID = remainReviewer.get(i).reviewerID;
@@ -182,24 +226,76 @@ public class DecisionTree {
             currentReviewer.probability_F = remainReviewer.get(i).probability_F;
             ArrayList<Reviewer> remainReviewer_cp = new ArrayList<>(remainReviewer);
             ArrayList<Reviewer> newRemain = new ArrayList<>(upDateRemainReviewer(currentReviewer.reviewerID, remainReviewer_cp));
-            maxValue = Math.max(maxValue, review_Value(prev_S, newRemain, currentReviewer));
+            tempChoice = review_Value(prev_S, newRemain, currentReviewer);
+            maxValue = Math.max(maxValue, tempChoice.value);
+            tempNode.value = maxValue;
+            if (maxValue == pub_rejValue) {
+                tempNode.publish = "Publish";
+            } else {
+                tempNode.ID = "Reviewer " + " " + String.valueOf(currentReviewer.reviewerID);
+            }
             if (maxValue == pub_rejValue) {
                 firstStep = "Publish";
             } else {
-                firstStep = "Consult reviewer " + String.valueOf(currentReviewer.reviewerID);
+                firstStep = "Consult reviewer " + String.valueOf(currentReviewer.reviewerID + ": ");
             }
+            tempNode.choiceNode = tempChoice;
         }
 
-        return maxValue;
+        System.out.println("MaxValue: " + tempNode.value + "   " + tempNode.ID + " " + tempNode.publish + " " + tempNode.reject);
+        return tempNode;
     }
 
-    public static void main (String[] args) {
+    public static void printResult () {
+        Node currentNode;
+        String output = "Start";
+        double temp = utility_S * originalPro_S + utility_F * (1 - originalPro_S);
+        int startPubValue = (int)Math.round(temp);
+        currentNode = expectedValue(originalPro_S, reviewersList, startPubValue);
+        Scanner scan = new Scanner(System.in);
+        String input;
+        System.out.println("Expected value:" + " " + expectedValue(originalPro_S, reviewersList, startPubValue).value);
+        System.out.print(firstStep);
+        input = scan.next();
+        while (!output.equals("Publish") && !output.equals("Reject")) {
+            if (input.equals("yes")) {
+                currentNode = currentNode.yesPath;
+                if (currentNode.publish != null) {
+                    output = currentNode.publish;
+                    System.out.println(output);
+                } else if (currentNode.reject != null) {
+                    output = currentNode.reject;
+                    System.out.println(output);
+                } else {
+                    input = scan.next();
+                }
+            }
+            if (input.equals("no")) {
+                currentNode = currentNode.noPath;
+                if (currentNode.publish != null) {
+                    output = currentNode.publish;
+                    System.out.println(output);
+                } else if (currentNode.reject != null) {
+                    output = currentNode.reject;
+                    System.out.println(output);
+                } else {
+                    currentNode = currentNode.choiceNode;
+                    System.out.print(currentNode.ID + ": ");
+                    input = scan.next();
+                }
+            }
+
+        }
+    }
+
+    public static void main (String[] args) throws IOException{
         String inputFile;
         inputFile = args[0];
         parser(inputFile);
-        double temp = utility_S * originalPro_S + utility_F * (1 - originalPro_S);
+        /*double temp = utility_S * originalPro_S + utility_F * (1 - originalPro_S);
         int startPubValue = (int)Math.round(temp);
-        System.out.println("Expected value:" + " " + expectedValue(originalPro_S, reviewersList, startPubValue));
-        System.out.println(firstStep);
+        System.out.println("Expected value:" + " " + expectedValue(originalPro_S, reviewersList, startPubValue).value);
+        System.out.println(firstStep);*/
+        printResult();
     }
 }
