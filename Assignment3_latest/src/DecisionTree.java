@@ -109,6 +109,7 @@ public class DecisionTree {
     }
 
     public static double updatePrevYes_S (double prev_S, Reviewer currentReviewer) {
+        /*System.out.println(prev_S * currentReviewer.probability_S / reviewerYes(prev_S, currentReviewer));*/
         return prev_S * currentReviewer.probability_S / reviewerYes(prev_S, currentReviewer);
     }
 
@@ -119,43 +120,56 @@ public class DecisionTree {
     public static Node reviewYes_Value (double prev_S, ArrayList<Reviewer> remainReviewer, Reviewer currentReviewer) {
         double temp;
         Node tempNode = dt. new Node();
+        Node choice = dt.new Node();
+        Node tempchoice;
         if (remainReviewer.isEmpty()) {
             temp = reviewerYes(prev_S, currentReviewer) * publishValue(updatePrevYes_S(prev_S, currentReviewer), reviewersList);
-            tempNode.value = (int)Math.round(temp);
-            tempNode.publish = "Publish";
+            choice.publish = "Publish";
+            /*choice.value = (int)Math.round(temp);
+            tempNode.choiceNode = choice;*/
         } else {
             int tempPub = publishValue(updatePrevYes_S(prev_S, currentReviewer), consultReviewers(remainReviewer));
-            int tempEp = expectedValue(updatePrevYes_S(prev_S, currentReviewer), remainReviewer, tempPub).value;
+            tempchoice = expectedValue(updatePrevYes_S(prev_S, currentReviewer), remainReviewer, tempPub);
+            int tempEp = tempchoice.value;
             temp = reviewerYes(prev_S, currentReviewer) * tempEp;
             if (tempPub == tempEp) {
-                tempNode.publish = "Publish";
+                choice.publish = "Publish";
+                choice.value = tempPub;
             } else {
-                tempNode.ID = "Reviewer " + " " + String.valueOf(currentReviewer.reviewerID);
+                choice = tempchoice;
+                /*choice.ID = "Reviewer " + " " + String.valueOf(currentReviewer.reviewerID);*/
             }
-            tempNode.value = (int)Math.round(temp);
+
         }
+        tempNode.choiceNode = choice;
+        tempNode.value = (int)Math.round(temp);
         return tempNode;
     }
 
     public static Node reviewNo_Value (double prev_S, ArrayList<Reviewer> remainReviewer, Reviewer currentReviewer) {
         double temp;
         Node tempNode = dt. new Node();
+        Node choice = dt.new Node();
         if (remainReviewer.isEmpty()) {
             temp = (1 - reviewerYes(prev_S, currentReviewer)) * rejValue(reviewersList);
-            tempNode.value = (int)Math.round(temp);
-            tempNode.reject = "Reject";
+            choice.value = (int)Math.round(temp);
+            choice.reject = "Reject";
+            /*tempNode.choiceNode = choice;*/
         } else {
             int tempRej = rejValue(consultReviewers(remainReviewer));
-            int tempEp = expectedValue(updatePrevNo_S(prev_S, currentReviewer), remainReviewer, tempRej).value;
+            Node tempchoice = expectedValue(updatePrevNo_S(prev_S, currentReviewer), remainReviewer, tempRej);
+            int tempEp = tempchoice.value;
             temp = (1 - reviewerYes(prev_S, currentReviewer)) * tempEp;
             if (tempRej == tempEp) {
-                tempNode.publish = "Reject";
+                choice.reject = "Reject";
+                choice.value = tempRej;
             } else {
-                tempNode.ID = "Reviewer " + " " + String.valueOf(currentReviewer.reviewerID);
+                choice = tempchoice;
+                /*choice.ID = "Reviewer " + " " + String.valueOf(currentReviewer.reviewerID);*/
             }
-            tempNode.value = (int)Math.round(temp);
-
         }
+        tempNode.choiceNode = choice;
+        tempNode.value = (int)Math.round(temp);
         return tempNode;
     }
 
@@ -218,8 +232,9 @@ public class DecisionTree {
         maxValue = pub_rejValue;
         Node tempNode = dt.new Node();
         Node tempChoice;
+        Node choice = dt.new Node();
         for (int i = 0; i < remainReviewer.size(); i++) {
-            Reviewer currentReviewer = dt. new Reviewer();
+            Reviewer currentReviewer = dt.new Reviewer();
             currentReviewer.reviewerID = remainReviewer.get(i).reviewerID;
             currentReviewer.cost = remainReviewer.get(i).cost;
             currentReviewer.probability_S = remainReviewer.get(i).probability_S;
@@ -228,21 +243,24 @@ public class DecisionTree {
             ArrayList<Reviewer> newRemain = new ArrayList<>(upDateRemainReviewer(currentReviewer.reviewerID, remainReviewer_cp));
             tempChoice = review_Value(prev_S, newRemain, currentReviewer);
             maxValue = Math.max(maxValue, tempChoice.value);
-            tempNode.value = maxValue;
             if (maxValue == pub_rejValue) {
-                tempNode.publish = "Publish";
+                choice.publish = "Publish";
+                choice.value = pub_rejValue;
+                tempNode = choice;
             } else {
-                tempNode.ID = "Reviewer " + " " + String.valueOf(currentReviewer.reviewerID);
+                choice = tempChoice;
+                choice.ID = "Reviewer " + " " + String.valueOf(currentReviewer.reviewerID);
+                tempNode = choice;
             }
-            if (maxValue == pub_rejValue) {
-                firstStep = "Publish";
-            } else {
-                firstStep = "Consult reviewer " + String.valueOf(currentReviewer.reviewerID + ": ");
-            }
-            tempNode.choiceNode = tempChoice;
+                /*if (maxValue == pub_rejValue) {
+                    firstStep = "Publish";
+                } else {
+                    firstStep = "Consult reviewer " + String.valueOf(currentReviewer.reviewerID + ": ");
+                }*/
+
         }
 
-        System.out.println("MaxValue: " + tempNode.value + "   " + tempNode.ID + " " + tempNode.publish + " " + tempNode.reject);
+        /*System.out.println("MaxValue: " + tempNode.value + "   " + tempNode.ID + " " + tempNode.publish + " " + tempNode.reject);*/
         return tempNode;
     }
 
