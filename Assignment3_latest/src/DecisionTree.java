@@ -1,7 +1,4 @@
-/**
- * Created by min on 11/1/15.
- */
-import javax.swing.text.AsyncBoxView;
+
 import java.util.*;
 import java.io.*;
 import java.lang.*;
@@ -109,7 +106,6 @@ public class DecisionTree {
     }
 
     public static double updatePrevYes_S (double prev_S, Reviewer currentReviewer) {
-        /*System.out.println(prev_S * currentReviewer.probability_S / reviewerYes(prev_S, currentReviewer));*/
         return prev_S * currentReviewer.probability_S / reviewerYes(prev_S, currentReviewer);
     }
 
@@ -125,8 +121,6 @@ public class DecisionTree {
         if (remainReviewer.isEmpty()) {
             temp = reviewerYes(prev_S, currentReviewer) * publishValue(updatePrevYes_S(prev_S, currentReviewer), reviewersList);
             choice.publish = "Publish";
-            /*choice.value = (int)Math.round(temp);
-            tempNode.choiceNode = choice;*/
         } else {
             int tempPub = publishValue(updatePrevYes_S(prev_S, currentReviewer), consultReviewers(remainReviewer));
             tempchoice = expectedValue(updatePrevYes_S(prev_S, currentReviewer), remainReviewer, tempPub);
@@ -137,7 +131,6 @@ public class DecisionTree {
                 choice.value = tempPub;
             } else {
                 choice = tempchoice;
-                /*choice.ID = "Reviewer " + " " + String.valueOf(currentReviewer.reviewerID);*/
             }
 
         }
@@ -154,7 +147,6 @@ public class DecisionTree {
             temp = (1 - reviewerYes(prev_S, currentReviewer)) * rejValue(reviewersList);
             choice.value = (int)Math.round(temp);
             choice.reject = "Reject";
-            /*tempNode.choiceNode = choice;*/
         } else {
             int tempRej = rejValue(consultReviewers(remainReviewer));
             Node tempchoice = expectedValue(updatePrevNo_S(prev_S, currentReviewer), remainReviewer, tempRej);
@@ -165,7 +157,6 @@ public class DecisionTree {
                 choice.value = tempRej;
             } else {
                 choice = tempchoice;
-                /*choice.ID = "Reviewer " + " " + String.valueOf(currentReviewer.reviewerID);*/
             }
         }
         tempNode.choiceNode = choice;
@@ -259,10 +250,9 @@ public class DecisionTree {
             }
 
         }
-
-        /*System.out.println("MaxValue: " + tempNode.value + "   " + tempNode.ID + " " + tempNode.publish + " " + tempNode.reject);*/
         return tempNode;
     }
+
 
     public static void printResult () {
         Node currentNode;
@@ -275,8 +265,14 @@ public class DecisionTree {
         System.out.println("Expected value:" + " " + expectedValue(originalPro_S, reviewersList, startPubValue).value);
         System.out.print(firstStep);
         input = scan.next();
+        while (!input.equals("Yes") && !input.equals("No")) {
+            System.out.println("\nPlease enter Yes or No.\n");
+            System.out.println("Expected value:" + " " + expectedValue(originalPro_S, reviewersList, startPubValue).value);
+            System.out.print(firstStep);
+            input = scan.next();
+        }
         while (!output.equals("Publish") && !output.equals("Reject")) {
-            if (input.equals("yes")) {
+            if (input.equals("Yes")) {
                 currentNode = currentNode.yesPath;
                 if (currentNode.choiceNode.publish.equals("Publish")) {
                     output = "Publish";
@@ -288,7 +284,7 @@ public class DecisionTree {
                     input = scan.next();
                 }
             }
-            if (input.equals("no")) {
+            if (input.equals("No")) {
                 currentNode = currentNode.noPath;
                 if (currentNode.choiceNode.publish.equals("Publish")) {
                     output = "Publish";
@@ -310,10 +306,6 @@ public class DecisionTree {
         String inputFile;
         inputFile = args[0];
         parser(inputFile);
-        /*double temp = utility_S * originalPro_S + utility_F * (1 - originalPro_S);
-        int startPubValue = (int)Math.round(temp);
-        System.out.println("Expected value:" + " " + expectedValue(originalPro_S, reviewersList, startPubValue).value);
-        System.out.println(firstStep);*/
         printResult();
     }
 }
